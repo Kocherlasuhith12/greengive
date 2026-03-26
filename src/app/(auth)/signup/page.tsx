@@ -24,20 +24,27 @@ export default function SignupPage() {
     full_name: '',
     email: '',
     password: '',
-    plan: planFromUrl || 'monthly' as 'monthly' | 'yearly',
+    plan: (planFromUrl || 'monthly') as 'monthly' | 'yearly',
     charity_id: '',
     charity_percentage: 10,
   })
 
-  const [charities, setCharities] = useState<{ id: string; name: string; is_featured: boolean }[]>([])
+  const [charities, setCharities] = useState<
+    { id: string; name: string; is_featured: boolean }[]
+  >([])
 
   useEffect(() => {
-    supabase.from('charities').select('id, name, is_featured').eq('is_active', true)
-      .then(({ data }) => { if (data) setCharities(data) })
-  }, [])
+    supabase
+      .from('charities')
+      .select('id, name, is_featured')
+      .eq('is_active', true)
+      .then(({ data }) => {
+        if (data) setCharities(data)
+      })
+  }, [supabase])
 
   const update = (field: string, value: string | number) =>
-    setForm(prev => ({ ...prev, [field]: value }))
+    setForm((prev) => ({ ...prev, [field]: value }))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -45,39 +52,31 @@ export default function SignupPage() {
     setError('')
 
     try {
-      // 1. Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
           data: { full_name: form.full_name },
-          emailRedirectTo: `${location.origin}/auth/callback`,
         },
       })
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Signup failed — no user returned')
+      if (signUpError) throw signUpError
+      if (!signUpData.user) throw new Error('Signup failed — no user returned')
 
-      // 2. Create subscription (mock — no Stripe yet)
-      const plan = PLANS[form.plan]
-      const periodEnd = new Date()
-      form.plan === 'yearly'
-        ? periodEnd.setFullYear(periodEnd.getFullYear() + 1)
-        : periodEnd.setMonth(periodEnd.getMonth() + 1)
-
-      const { error: subError } = await supabase.from('subscriptions').insert({
-        user_id: authData.user.id,
-        plan: form.plan,
-        status: 'active',
-        amount_pence: plan.amount_pence,
-        charity_id: form.charity_id || null,
-        charity_percentage: form.charity_percentage,
-        current_period_end: periodEnd.toISOString(),
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
       })
 
-      if (subError) console.error('Subscription error:', subError)
+      if (signInError) throw signInError
 
-      router.push('/dashboard?welcome=1')
+      const params = new URLSearchParams({
+        plan: form.plan,
+        charity_id: form.charity_id,
+        charity_percentage: String(form.charity_percentage),
+      })
+
+      router.push(`/subscribe?${params.toString()}`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -93,19 +92,29 @@ export default function SignupPage() {
     >
       <div className="card p-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-display font-bold text-white mb-1">Create your account</h1>
-          <p className="text-gray-400 text-sm">Join GreenGive and start making an impact</p>
+          <h1 className="text-2xl font-display font-bold text-white mb-1">
+            Create your account
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Join GreenGive and start making an impact
+          </p>
         </div>
 
-        {/* Step indicator */}
         <div className="flex items-center gap-3 mb-8">
-          {[1, 2].map(s => (
+          {[1, 2].map((s) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors
-                ${step >= s ? 'bg-brand-500 text-dark-900' : 'bg-dark-600 text-gray-500'}`}>
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                  step >= s
+                    ? 'bg-brand-500 text-dark-900'
+                    : 'bg-dark-600 text-gray-500'
+                }`}
+              >
                 {step > s ? <CheckCircle size={14} /> : s}
               </div>
-              <span className={`text-xs ${step >= s ? 'text-white' : 'text-gray-600'}`}>
+              <span
+                className={`text-xs ${step >= s ? 'text-white' : 'text-gray-600'}`}
+              >
                 {s === 1 ? 'Account' : 'Plan & Charity'}
               </span>
               {s < 2 && <div className="w-8 h-px bg-dark-600 ml-1" />}
@@ -118,14 +127,28 @@ export default function SignupPage() {
             <div className="space-y-4">
               <div>
                 <label className="label">Full name</label>
-                <input className="input" type="text" placeholder="Your name" required
-                  value={form.full_name} onChange={e => update('full_name', e.target.value)} />
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="Your name"
+                  required
+                  value={form.full_name}
+                  onChange={(e) => update('full_name', e.target.value)}
+                />
               </div>
+
               <div>
                 <label className="label">Email address</label>
-                <input className="input" type="email" placeholder="you@example.com" required
-                  value={form.email} onChange={e => update('email', e.target.value)} />
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="you@example.com"
+                  required
+                  value={form.email}
+                  onChange={(e) => update('email', e.target.value)}
+                />
               </div>
+
               <div>
                 <label className="label">Password</label>
                 <div className="relative">
@@ -136,14 +159,18 @@ export default function SignupPage() {
                     minLength={6}
                     required
                     value={form.password}
-                    onChange={e => update('password', e.target.value)}
+                    onChange={(e) => update('password', e.target.value)}
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                  >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
+
               <button type="submit" className="btn-primary w-full justify-center mt-2">
                 Continue
               </button>
@@ -152,21 +179,23 @@ export default function SignupPage() {
 
           {step === 2 && (
             <div className="space-y-6">
-              {/* Plan selection */}
               <div>
                 <label className="label">Choose your plan</label>
                 <div className="grid grid-cols-2 gap-3">
-                  {(['monthly', 'yearly'] as const).map(p => (
+                  {(['monthly', 'yearly'] as const).map((p) => (
                     <button
                       key={p}
                       type="button"
                       onClick={() => update('plan', p)}
-                      className={`p-4 rounded-xl border text-left transition-all
-                        ${form.plan === p
+                      className={`p-4 rounded-xl border text-left transition-all ${
+                        form.plan === p
                           ? 'border-brand-500 bg-brand-900/20'
-                          : 'border-dark-500 hover:border-dark-400'}`}
+                          : 'border-dark-500 hover:border-dark-400'
+                      }`}
                     >
-                      <div className="text-sm font-semibold text-white capitalize">{p}</div>
+                      <div className="text-sm font-semibold text-white capitalize">
+                        {p}
+                      </div>
                       <div className="text-lg font-display font-bold text-brand-400 mt-1">
                         {PLANS[p].label}
                       </div>
@@ -178,7 +207,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Charity selection */}
               <div>
                 <label className="label flex items-center gap-1">
                   <Heart size={14} className="text-pink-500" /> Select your charity
@@ -186,31 +214,40 @@ export default function SignupPage() {
                 <select
                   className="input"
                   value={form.charity_id}
-                  onChange={e => update('charity_id', e.target.value)}
+                  onChange={(e) => update('charity_id', e.target.value)}
                 >
                   <option value="">-- Choose a charity --</option>
-                  {charities.map(c => (
+                  {charities.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name}{c.is_featured ? ' ⭐' : ''}
+                      {c.name}
+                      {c.is_featured ? ' ⭐' : ''}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Charity percentage */}
               <div>
                 <label className="label">
-                  Charity contribution: <span className="text-brand-400 font-semibold">{form.charity_percentage}%</span>
+                  Charity contribution:{' '}
+                  <span className="text-brand-400 font-semibold">
+                    {form.charity_percentage}%
+                  </span>
                   <span className="text-gray-600 ml-1">(minimum 10%)</span>
                 </label>
                 <input
-                  type="range" min={10} max={50} step={5}
+                  type="range"
+                  min={10}
+                  max={50}
+                  step={5}
                   value={form.charity_percentage}
-                  onChange={e => update('charity_percentage', parseInt(e.target.value))}
+                  onChange={(e) =>
+                    update('charity_percentage', parseInt(e.target.value))
+                  }
                   className="w-full accent-brand-500 mt-2"
                 />
                 <div className="flex justify-between text-xs text-gray-600 mt-1">
-                  <span>10%</span><span>50%</span>
+                  <span>10%</span>
+                  <span>50%</span>
                 </div>
               </div>
 
@@ -221,11 +258,19 @@ export default function SignupPage() {
               )}
 
               <div className="flex gap-3">
-                <button type="button" onClick={() => setStep(1)} className="btn-secondary flex-1 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="btn-secondary flex-1 justify-center"
+                >
                   Back
                 </button>
-                <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
-                  {loading ? 'Creating account…' : 'Create account'}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary flex-1 justify-center"
+                >
+                  {loading ? 'Creating account…' : 'Continue to payment'}
                 </button>
               </div>
             </div>
@@ -234,7 +279,10 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}
-          <Link href="/login" className="text-brand-400 hover:text-brand-300 transition-colors">
+          <Link
+            href="/login"
+            className="text-brand-400 hover:text-brand-300 transition-colors"
+          >
             Sign in
           </Link>
         </p>
