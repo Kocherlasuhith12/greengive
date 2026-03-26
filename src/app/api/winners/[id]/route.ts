@@ -5,8 +5,8 @@ export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = createClient()
-  const admin = createAdminClient()
+  const supabase = await createClient()
+  const admin = await createAdminClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })

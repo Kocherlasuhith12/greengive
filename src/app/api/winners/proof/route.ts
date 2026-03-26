@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 // POST /api/winners/proof — user submits proof for a winning entry
 export async function POST(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })

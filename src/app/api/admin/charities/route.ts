@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server'
 
 // GET /api/admin/charities — list all charities (admin)
 export async function GET() {
-  const supabase = createClient()
-  const admin = createAdminClient()
+  const supabase = await createClient()
+  const admin = await createAdminClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
@@ -24,8 +24,8 @@ export async function GET() {
 
 // POST /api/admin/charities — create new charity
 export async function POST(req: Request) {
-  const supabase = createClient()
-  const admin = createAdminClient()
+  const supabase = await createClient()
+  const admin = await createAdminClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })

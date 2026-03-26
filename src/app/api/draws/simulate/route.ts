@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server'
 import { runSimulation } from '@/lib/drawEngine'
 
 export async function POST(req: Request) {
-  const supabase = createClient()
-  const admin = createAdminClient()
+  const supabase = await createClient()
+  const admin = await createAdminClient()
 
   // Auth check — admin only
   const { data: { user } } = await supabase.auth.getUser()

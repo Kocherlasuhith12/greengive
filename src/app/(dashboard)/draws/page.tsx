@@ -4,7 +4,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { Trophy, AlertCircle } from 'lucide-react'
 
 export default async function DrawsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 

@@ -3,7 +3,7 @@ import { formatCurrency } from '@/lib/utils'
 import { Users, Trophy, Heart, BarChart3 } from 'lucide-react'
 
 export default async function AdminStatsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const [usersRes, subsRes, drawsRes, charitiesRes, winnersRes] = await Promise.all([
     supabase.from('profiles').select('id', { count: 'exact' }),

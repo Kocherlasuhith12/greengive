@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 // POST /api/donations — make an independent donation
 export async function POST(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
 // GET /api/donations — user's donation history
 export async function GET() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })

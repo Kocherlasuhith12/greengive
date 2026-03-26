@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 // PATCH /api/subscriptions — update own subscription (cancel, change charity %)
 export async function PATCH(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
