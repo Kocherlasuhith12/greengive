@@ -3,10 +3,6 @@ export const dynamic = 'force-dynamic'
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import nextDynamic from 'next/dynamic'
-const MotionDiv = nextDynamic(() => import('framer-motion').then(m => ({ default: m.motion.div })), { ssr: false })
-const MotionForm = nextDynamic(() => import("framer-motion").then(m => ({ default: m.motion.form })), { ssr: false })
-const MotionButton = nextDynamic(() => import("framer-motion").then(m => ({ default: m.motion.button })), { ssr: false })
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -43,9 +39,7 @@ function LoginContent() {
   }
 
   return (
-    <MotionDiv
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="w-full max-w-md"
     >
       <div className="card p-8">
@@ -121,13 +115,14 @@ function LoginContent() {
           </Link>
         </p>
       </div>
-    </MotionDiv>
+    </div>
   )
 }
 
-export default function LoginPage() {
+
+export default function Page() {
   return (
-    <Suspense fallback={<div className="text-white py-10 text-center">Loading...</div>}>
+    <Suspense fallback={null}>
       <LoginContent />
     </Suspense>
   )

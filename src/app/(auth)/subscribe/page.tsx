@@ -92,7 +92,7 @@ function SubscribeContent() {
 }
 
 // ✅ Default export wraps it in Suspense — this is what Next.js needs
-export default function SubscribePage() {
+export default function Page() {
   return (
     <Suspense fallback={<div className="text-white py-10 text-center">Loading...</div>}>
       <SubscribeContent />
