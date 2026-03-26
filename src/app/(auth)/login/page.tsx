@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') || '/subscribe'
@@ -64,23 +64,17 @@ export default function LoginPage() {
               placeholder="you@example.com"
               required
               value={form.email}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, email: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="label mb-0">Password</label>
-              <Link
-                href="#"
-                className="text-xs text-brand-500 hover:text-brand-400 transition-colors"
-              >
+              <Link href="#" className="text-xs text-brand-500 hover:text-brand-400 transition-colors">
                 Forgot password?
               </Link>
             </div>
-
             <div className="relative">
               <input
                 className="input pr-12"
@@ -88,9 +82,7 @@ export default function LoginPage() {
                 placeholder="Your password"
                 required
                 value={form.password}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, password: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               />
               <button
                 type="button"
@@ -108,39 +100,32 @@ export default function LoginPage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full justify-center mt-2"
-          >
+          <button type="submit" disabled={loading} className="btn-primary w-full justify-center mt-2">
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
         <div className="mt-6 p-4 rounded-xl bg-dark-700/50 border border-dark-500">
-          <p className="text-xs text-gray-500 font-medium mb-2">
-            Test credentials (evaluators)
-          </p>
-          <p className="text-xs text-gray-400">
-            User:{' '}
-            <span className="text-gray-300">user@test.com / test123456</span>
-          </p>
-          <p className="text-xs text-gray-400">
-            Admin:{' '}
-            <span className="text-gray-300">admin@test.com / admin123456</span>
-          </p>
+          <p className="text-xs text-gray-500 font-medium mb-2">Test credentials (evaluators)</p>
+          <p className="text-xs text-gray-400">User: <span className="text-gray-300">user@test.com / test123456</span></p>
+          <p className="text-xs text-gray-400">Admin: <span className="text-gray-300">admin@test.com / admin123456</span></p>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           New to GreenGive?{' '}
-          <Link
-            href="/signup"
-            className="text-brand-400 hover:text-brand-300 transition-colors"
-          >
+          <Link href="/signup" className="text-brand-400 hover:text-brand-300 transition-colors">
             Create an account
           </Link>
         </p>
       </div>
     </motion.div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-white py-10 text-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   )
 }
