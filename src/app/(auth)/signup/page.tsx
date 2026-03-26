@@ -3,10 +3,6 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, Suspense } from "react"
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import nextDynamic from 'next/dynamic'
-const MotionDiv = nextDynamic(() => import('framer-motion').then(m => ({ default: m.motion.div })), { ssr: false })
-const MotionForm = nextDynamic(() => import("framer-motion").then(m => ({ default: m.motion.form })), { ssr: false })
-const MotionButton = nextDynamic(() => import("framer-motion").then(m => ({ default: m.motion.button })), { ssr: false })
 import { Eye, EyeOff, CheckCircle, Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 const PLANS = { monthly: { amount_pence: 999, label: "£9.99/month", period: "month" }, yearly: { amount_pence: 8999, label: "£89.99/year", period: "year", saving: "Save 25%" } } as const
