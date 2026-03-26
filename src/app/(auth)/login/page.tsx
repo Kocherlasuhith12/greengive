@@ -3,7 +3,10 @@ export const dynamic = 'force-dynamic'
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
+import nextDynamic from 'next/dynamic'
+const MotionDiv = nextDynamic(() => import('framer-motion').then(m => ({ default: m.motion.div })), { ssr: false })
+const MotionForm = nextDynamic(() => import("framer-motion").then(m => ({ default: m.motion.form })), { ssr: false })
+const MotionButton = nextDynamic(() => import("framer-motion").then(m => ({ default: m.motion.button })), { ssr: false })
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -40,7 +43,7 @@ function LoginContent() {
   }
 
   return (
-    <motion.div
+    <MotionDiv
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-md"
@@ -118,7 +121,7 @@ function LoginContent() {
           </Link>
         </p>
       </div>
-    </motion.div>
+    </MotionDiv>
   )
 }
 

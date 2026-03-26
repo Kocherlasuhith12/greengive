@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import Link from "next/link"
+import { Suspense } from "react"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </Link>
       </nav>
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-12">
-        {children}
+        <Suspense fallback={null}>{children}</Suspense>
       </main>
     </div>
   )
