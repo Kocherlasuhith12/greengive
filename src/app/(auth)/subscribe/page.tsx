@@ -1,6 +1,6 @@
 // app/(auth)/subscribe/page.tsx
 'use client'
-
+export const dynamic = 'force-dynamic'
 import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
