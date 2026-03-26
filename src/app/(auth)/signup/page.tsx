@@ -8,7 +8,7 @@ import { Eye, EyeOff, CheckCircle, Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { PLANS } from '@/types'
 
-export default function SignupPage() {
+function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const planFromUrl = searchParams.get('plan') as 'monthly' | 'yearly' | null

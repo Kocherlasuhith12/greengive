@@ -1,11 +1,12 @@
+// app/api/admin/charities/[id]/route.ts
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-
-// PATCH /api/admin/charities/[id] — update charity
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params   // ✅ await the params
+
   const supabase = await createClient()
   const admin = await createAdminClient()
 
@@ -25,7 +26,7 @@ export async function PATCH(
   const { data, error } = await admin
     .from('charities')
     .update(updates)
-    .eq('id', params.id)
+    .eq('id', id)           // ✅ use awaited id, not params.id
     .select()
     .single()
 
@@ -33,11 +34,13 @@ export async function PATCH(
   return NextResponse.json({ charity: data })
 }
 
-// DELETE /api/admin/charities/[id] — soft delete (set inactive)
+// DELETE — also update this one while you're here
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }   // ✅ Promise type in Next.js 15
 ) {
+  const { id } = await params
+
   const supabase = await createClient()
   const admin = await createAdminClient()
 
@@ -50,7 +53,7 @@ export async function DELETE(
   const { error } = await admin
     .from('charities')
     .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq('id', params.id)
+    .eq('id', id)           // ✅ use awaited id
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
